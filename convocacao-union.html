@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Novo contrato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b1217;
+  --ink: #d6e6ee;
+  --dim: #6c8794;
+  --warn: #cc5a43;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); background: var(--bg); }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.65;
+}
+main { max-width: 64ch; margin: 0 auto; padding: 28px 20px 96px; }
+.l { min-height: 1.65em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dim { color: var(--dim); }
+.gap { height: 1em; }
+.flag { margin: 6px 0 16px; }
+.flag canvas { display: block; max-width: 100%; }
+.alert { color: var(--warn); font-weight: 600; font-size: 1.2em; letter-spacing: .14em; }
+.ok { color: #5fbf8a; font-weight: 600; font-size: 1.2em; letter-spacing: .14em; }
+.title { font-weight: 600; font-size: 1.05em; }
+.motto { font-size: 1.05em; }
+.row { margin-bottom: 14px; overflow-wrap: anywhere; }
+.row .k { display: block; color: var(--dim); font-size: .85em; }
+.row .v { display: block; white-space: pre-line; }
+@media (min-width: 560px) {
+  .row { display: grid; grid-template-columns: 12em 1fr; gap: 0 12px; }
+  .row .k { font-size: 1em; }
+}
+.cur { display: inline-block; width: .6em; height: 1.05em; margin-left: 2px; vertical-align: text-bottom; background: var(--ink); animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+button {
+  font: inherit; color: var(--ink); background: transparent;
+  border: 1px solid var(--dim); padding: 10px 18px; margin: 10px 10px 0 0; cursor: pointer;
+}
+button:hover { border-color: var(--ink); }
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .cur { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div id="out" aria-live="polite"></div>
+  <div id="gate"></div>
+</main>
+<script>
+const out = document.getElementById('out');
+const gate = document.getElementById('gate');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sleep = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+const cur = document.createElement('span');
+cur.className = 'cur';
+
+const FLAG = {"cols":69,"rows":35,"data":["                              #########                              ","                      #####               #####                      ","                  ###                           ###                  ","               ##                                   ##               ","            ##                                         ##            ","          ##                                             ##          ","        ##      @        [=================]        @      ##        ","       #        @        [=================]        @        #       ","     ##         @                |#|                @         ##     ","    ##          @                |#|                @          ##    ","   ##          @@@               |#|               @@@          ##   ","  ##          @@@@@              |#|              @@@@@          ##  ","  #       @@@@@@@@@@@@@          / \\          @@@@@@@@@@@@@       #  "," ##           @@@@@             /   \\             @@@@@           ## "," #             @@@             /     \\             @@@             # ","##              @             /       \\             @              ##","##              @            /         \\            @              ##","##              @           /           \\           @              ##","##              @          /             \\          @              ##","##                        /       @       \\                        ##"," #                       /        @        \\                       # "," ##                     /         @         \\                     ## ","  #                    /          @          \\                    #  ","  ##                  /          @@@          \\                  ##  ","   ##                /          @@@@@          \\                ##   ","    ##                      @@@@@@@@@@@@@                      ##    ","     ##                         @@@@@                         ##     ","       #                         @@@                         #       ","        ##                        @                        ##        ","          ##                      @                      ##          ","            ##                    @                    ##            ","               ##                 @                 ##               ","                  ###                           ###                  ","                      #####               #####                      ","                              #########                              "]};
+
+async function fill(d, text, speed) {
+  if (reduce) { d.t.data = text; return; }
+  for (let i = 1; i <= text.length; i++) {
+    d.t.data = text.slice(0, i);
+    await sleep(speed);
+  }
+}
+function line(cls) {
+  const d = document.createElement('div');
+  d.className = 'l ' + (cls || '');
+  d.t = document.createTextNode('');
+  d.append(d.t, cur);
+  out.append(d);
+  return d;
+}
+async function say(text, cls, speed = 14, pause = 120) {
+  if (text === '') {
+    const g = document.createElement('div');
+    g.className = 'gap';
+    out.append(g);
+    return;
+  }
+  const d = line(cls);
+  await fill(d, text, speed);
+  await sleep(pause);
+}
+async function row(k, v, speed = 12, pause = 200) {
+  const d = document.createElement('div');
+  d.className = 'row';
+  const a = document.createElement('span');
+  a.className = 'k';
+  a.textContent = k;
+  const b = document.createElement('span');
+  b.className = 'v';
+  d.t = document.createTextNode('');
+  b.append(d.t, cur);
+  d.append(a, b);
+  out.append(d);
+  await fill(d, v, speed);
+  await sleep(pause);
+}
+async function msg(k, v, speed = 12, pause = 200) {
+  const d = document.createElement('div');
+  d.className = 'row';
+  const a = document.createElement('span');
+  a.className = 'k';
+  a.textContent = k;
+  const b = document.createElement('span');
+  b.className = 'v';
+  d.append(a, b);
+  out.append(d);
+  await art(b);
+  const p = document.createElement('div');
+  p.t = document.createTextNode('');
+  p.append(p.t, cur);
+  b.append(p);
+  await fill(p, v, speed);
+  await sleep(pause);
+}
+async function art(box) {
+  const wrap = document.createElement('div');
+  wrap.className = 'flag';
+  const cv = document.createElement('canvas');
+  wrap.append(cv);
+  box.append(wrap);
+  const W = Math.min(box.clientWidth || 320, 400);
+  const dpr = window.devicePixelRatio || 1;
+  const cw = W / FLAG.cols, ch = cw * 2;
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(ch * FLAG.rows * dpr);
+  cv.style.width = W + 'px';
+  cv.style.height = (ch * FLAG.rows) + 'px';
+  const g = cv.getContext('2d');
+  g.scale(dpr, dpr);
+  g.font = '600 ' + (cw * 1.6) + 'px "Spline Sans Mono", ui-monospace, Menlo, Consolas, monospace';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillStyle = '#d6e6ee';
+  for (let r = 0; r < FLAG.rows; r++) {
+    const s = FLAG.data[r];
+    for (let c = 0; c < s.length; c++) g.fillText(s[c], (c + 0.5) * cw, (r + 0.5) * ch);
+    await sleep(70);
+  }
+}
+function button(label, onClick) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.addEventListener('click', () => { gate.replaceChildren(); onClick(); });
+  gate.append(b);
+}
+
+async function intro() {
+  await say('rede de campo da União, terminal 7', 'dim', 18, 300);
+  await say('conexão criptografada estabelecida', 'dim', 18, 300);
+  await say('mensagem pendente para lancer', '', 18, 500);
+  cur.remove();
+  button('Autenticar', main);
+}
+
+async function main() {
+  await say('verificando credenciais…', 'dim', 20, 900);
+  await say('identidade confirmada', '', 20, 500);
+  await say('', '');
+  await say('ALERTA', 'alert', 45, 500);
+  await say('Novo contrato disponível', 'title', 22, 700);
+  await say('', '');
+  await row('Emissor', 'Departamento Expedicionário da União');
+  await msg('Mensagem do emissor', 'Houve um tempo em que os mundos se dividiam em bandeiras, fronteiras e rancores, e cada nova geração herdava a guerra da anterior. Até que a Guerra dos Mundos terminou, e de suas cinzas nasceu a União: uma só língua, uma só mesa, um só futuro. Desde então, ninguém mais passou fome, frio ou medo. Nada disso foi obra do acaso. Foi construído, dia após dia, por pessoas extraordinárias como você, que nunca deixaram de olhar além do horizonte. Ainda existem cantos distantes da galáxia esperando por prosperidade, ordem e abundância, e a União não os esqueceu.', 8);
+  await row('Diretrizes', '(1) Reconhecer setores não cartografados além do perímetro da União.\n(2) Explorar os planetas encontrados nesses setores.\n(3) Registrar e comunicar ao Departamento toda descoberta realizada.');
+  await row('Recompensa', '(a) Elevações de licença durante a missão.\n(b) Nave própria da União, para transporte pessoal.\n(c) Residência nos planetas habitáveis descobertos, com habitação fornecida pelo governo mediante o programa Meu Espaço Minha Vida.\n(d) Gesto formal de reconhecimento institucional, a ser prestado presencialmente pela autoridade competente.');
+  await row('Apresentação', 'Hangar da União mais próximo, em 05/12/385 d.U.');
+  cur.remove();
+  button('Aceitar', accept);
+  button('Recusar', refuse);
+}
+
+async function accept() {
+  await say('CONTRATO ACEITO', 'ok', 45, 900);
+  await say('', '');
+  await say('Seus atos não serão esquecidos.', '', 28, 1100);
+  await say('', '');
+  await say('“Nenhum muro se erguerá entre os mundos.”', 'motto', 32, 1300);
+  await say('', '');
+  await say('Vida longa à União.', 'title', 40, 1200);
+  await say('', '');
+  await say('fim da transmissão', 'dim', 20, 0);
+}
+async function refuse() {
+  await say('rapariga', '', 40, 1200);
+  await say('', '');
+  await say('fim da transmissão', 'dim', 20, 0);
+}
+intro();
+</script>
+</body>
+</html>
